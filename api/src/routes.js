@@ -1,6 +1,10 @@
 const sqlite3 = require("sqlite3").verbose();
 const express = require("express");
+const axios = require("axios");
+
 const router = express.Router();
+
+const average = (array) => array.reduce((a, b) => a + b) / array.length;
 
 const conv = (date) => {
     var pad = (num) => {
@@ -10,16 +14,34 @@ const conv = (date) => {
     tz_date = date === "now" ? new Date() : new Date(date);
     tz_date =
         tz_date.getFullYear() +
-        "-" +
         pad(tz_date.getMonth() + 1) +
-        "-" +
         pad(tz_date.getDate()) +
-        " " +
         pad(tz_date.getHours()) +
+        pad(tz_date.getMinutes());
+    return tz_date;
+};
+
+const reverse_conv = (date) => {
+    var pad = (num) => {
+        return ("00" + num).slice(-2);
+    };
+    var tz_date = date.toString();
+    year = tz_date.substring(0, 4);
+    month = tz_date.substring(4, 6);
+    day = tz_date.substring(6, 8);
+    hours = tz_date.substring(8, 10);
+    minutes = tz_date.substring(10, 12);
+    tz_date =
+        year +
+        "-" +
+        pad(month) +
+        "-" +
+        pad(day) +
+        " " +
+        pad(hours) +
         ":" +
-        pad(tz_date.getMinutes()) +
-        ":" +
-        pad(tz_date.getSeconds());
+        pad(minutes);
+
     return tz_date;
 };
 
@@ -39,26 +61,378 @@ const check_value = (v) => {
 
 router
     .get("/data", (req, res) => {
-        res.json({ message: "Return Average Per Sensor For Last 5 Minutes" });
+        const delta_time = parseInt(conv("now")) - 5;
+
+        let db = new sqlite3.Database("src/db.db", (err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
+        const humidity = [];
+        const temperature = [];
+        const pressure = [];
+        const noise = [];
+        const pm = [];
+        const aqi_us = [];
+        const position = {
+            lat: 0,
+            long: 0,
+            alt: 0,
+        };
+        let id = null;
+        let timestamp = null;
+
+        db.each(
+            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            (e, r) => {
+                humidity.push(r.humidity);
+                temperature.push(r.temperature);
+                pressure.push(r.pressure);
+                noise.push(r.noise);
+                pm.push(r.pm);
+                aqi_us.push(r.aqi_us);
+                position.lat = r.lat;
+                position.long = r.long;
+                position.alt = r.alt;
+                id = r.id;
+                timestamp = reverse_conv(r.timestamp);
+            },
+            (err, row) => {
+                if (err) {
+                    res.status(400).send({
+                        message: "Something went wrong",
+                        err: err,
+                    });
+                    console.log(err);
+                    return err;
+                }
+
+                axios
+                    .get(
+                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                    )
+                    .then((r) => {
+                        result = {
+                            timestamp: timestamp,
+                            id: id,
+                            location: {
+                                latitude: position.lat,
+                                longitude: position.long,
+                                altitude: position.alt,
+                                country: r.data.split("\r")[0],
+                            },
+                            sensordatavalues: {
+                                humidity: average(humidity),
+                                temperature: average(temperature),
+                                pressure: average(pressure),
+                                noise: average(noise),
+                                pm: average(pm),
+                                aqi_us: average(aqi_us),
+                            },
+                        };
+                        res.send(result);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        ).close((err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
         return 0;
     })
     .get("/data.1h", (req, res) => {
-        res.json({ message: "Return Average Per Sensor For Last 1 Hour" });
+        const delta_time = parseInt(conv("now")) - 100;
+
+        let db = new sqlite3.Database("src/db.db", (err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
+        const humidity = [];
+        const temperature = [];
+        const pressure = [];
+        const noise = [];
+        const pm = [];
+        const aqi_us = [];
+        const position = {
+            lat: 0,
+            long: 0,
+            alt: 0,
+        };
+        let id = null;
+        let timestamp = null;
+
+        db.each(
+            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            (e, r) => {
+                humidity.push(r.humidity);
+                temperature.push(r.temperature);
+                pressure.push(r.pressure);
+                noise.push(r.noise);
+                pm.push(r.pm);
+                aqi_us.push(r.aqi_us);
+                position.lat = r.lat;
+                position.long = r.long;
+                position.alt = r.alt;
+                id = r.id;
+                timestamp = reverse_conv(r.timestamp);
+            },
+            (err, row) => {
+                if (err) {
+                    res.status(400).send({
+                        message: "Something went wrong",
+                        err: err,
+                    });
+                    console.log(err);
+                    return err;
+                }
+
+                axios
+                    .get(
+                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                    )
+                    .then((r) => {
+                        result = {
+                            timestamp: timestamp,
+                            id: id,
+                            location: {
+                                latitude: position.lat,
+                                longitude: position.long,
+                                altitude: position.alt,
+                                country: r.data.split("\r")[0],
+                            },
+                            sensordatavalues: {
+                                humidity: average(humidity),
+                                temperature: average(temperature),
+                                pressure: average(pressure),
+                                noise: average(noise),
+                                pm: average(pm),
+                                aqi_us: average(aqi_us),
+                            },
+                        };
+                        res.send(result);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        ).close((err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
         return 0;
     })
     .get("/data.24h", (req, res) => {
-        res.json({ message: "Return Average Per Sensor For Last 24 Hours" });
+        const delta_time = parseInt(conv("now")) - 1000;
+
+        let db = new sqlite3.Database("src/db.db", (err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
+        const humidity = [];
+        const temperature = [];
+        const pressure = [];
+        const noise = [];
+        const pm = [];
+        const aqi_us = [];
+        const position = {
+            lat: 0,
+            long: 0,
+            alt: 0,
+        };
+        let id = null;
+        let timestamp = null;
+
+        db.each(
+            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            (e, r) => {
+                humidity.push(r.humidity);
+                temperature.push(r.temperature);
+                pressure.push(r.pressure);
+                noise.push(r.noise);
+                pm.push(r.pm);
+                aqi_us.push(r.aqi_us);
+                position.lat = r.lat;
+                position.long = r.long;
+                position.alt = r.alt;
+                id = r.id;
+                timestamp = reverse_conv(r.timestamp);
+            },
+            (err, row) => {
+                if (err) {
+                    res.status(400).send({
+                        message: "Something went wrong",
+                        err: err,
+                    });
+                    console.log(err);
+                    return err;
+                }
+
+                axios
+                    .get(
+                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                    )
+                    .then((r) => {
+                        result = {
+                            timestamp: timestamp,
+                            id: id,
+                            location: {
+                                latitude: position.lat,
+                                longitude: position.long,
+                                altitude: position.alt,
+                                country: r.data.split("\r")[0],
+                            },
+                            sensordatavalues: {
+                                humidity: average(humidity),
+                                temperature: average(temperature),
+                                pressure: average(pressure),
+                                noise: average(noise),
+                                pm: average(pm),
+                                aqi_us: average(aqi_us),
+                            },
+                        };
+                        res.send(result);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        ).close((err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
         return 0;
     })
     .get("/data.temp.min", (req, res) => {
-        res.json({
-            message:
-                "Return Average Temp/Humidity/Air Pressure For Last 5 Minutes",
+        const delta_time = parseInt(conv("now")) - 5;
+
+        let db = new sqlite3.Database("src/db.db", (err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
         });
+
+        const humidity = [];
+        const temperature = [];
+        const pressure = [];
+        const position = {
+            lat: 0,
+            long: 0,
+            alt: 0,
+        };
+        let id = null;
+        let timestamp = null;
+
+        db.each(
+            `SELECT temperature, humidity, pressure FROM data WHERE 'timestamp' > ${delta_time}`,
+            (e, r) => {
+                humidity.push(r.humidity);
+                temperature.push(r.temperature);
+                pressure.push(r.pressure);
+                position.lat = r.lat;
+                position.long = r.long;
+                position.alt = r.alt;
+                id = r.id;
+                timestamp = reverse_conv(r.timestamp);
+            },
+            (err, row) => {
+                if (err) {
+                    res.status(400).send({
+                        message: "Something went wrong",
+                        err: err,
+                    });
+                    console.log(err);
+                    return err;
+                }
+
+                axios
+                    .get(
+                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                    )
+                    .then((r) => {
+                        result = {
+                            timestamp: timestamp,
+                            id: id,
+                            location: {
+                                latitude: position.lat,
+                                longitude: position.long,
+                                altitude: position.alt,
+                                country: r.data.split("\r")[0],
+                            },
+                            sensordatavalues: {
+                                humidity: average(humidity),
+                                temperature: average(temperature),
+                                pressure: average(pressure),
+                            },
+                        };
+                        res.send(result);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        ).close((err) => {
+            if (err) {
+                res.status(400).send({
+                    message: "Something went wrong",
+                    err: err.message,
+                });
+                console.log(err);
+                return err.message;
+            }
+        });
+
         return 0;
     })
     .post("/push-sensor-data", (req, res) => {
-        const id = Math.random().toString(36).substring(2, 12);
+        const id = req.header("X-Sensor");
         const timestamp = conv("now");
         const sensordatavalues = req.body.sensordatavalues;
 
