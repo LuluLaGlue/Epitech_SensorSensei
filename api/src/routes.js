@@ -61,7 +61,9 @@ const check_value = (v) => {
 
 router
     .get("/data", (req, res) => {
-        const delta_time = parseInt(conv("now")) - 5;
+        const now = new Date();
+        const delta_date = new Date(now.getTime() - 5 * 60 * 1000);
+        const delta_time = parseInt(conv(delta_date));
 
         let db = new sqlite3.Database("src/db.db", (err) => {
             if (err) {
@@ -89,7 +91,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -112,35 +114,38 @@ router
                     console.log(err);
                     return err;
                 }
-
-                axios
-                    .get(
-                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
-                    )
-                    .then((r) => {
-                        result = {
-                            timestamp: timestamp,
-                            id: id,
-                            location: {
-                                latitude: position.lat,
-                                longitude: position.long,
-                                altitude: position.alt,
-                                country: r.data.split("\r")[0],
-                            },
-                            sensordatavalues: {
-                                humidity: average(humidity),
-                                temperature: average(temperature),
-                                pressure: average(pressure),
-                                noise: average(noise),
-                                pm: average(pm),
-                                aqi_us: average(aqi_us),
-                            },
-                        };
-                        res.send(result);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                if (id !== null) {
+                    axios
+                        .get(
+                            `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                        )
+                        .then((r) => {
+                            result = {
+                                timestamp: timestamp,
+                                id: id,
+                                location: {
+                                    latitude: position.lat,
+                                    longitude: position.long,
+                                    altitude: position.alt,
+                                    country: r.data.split("\r")[0],
+                                },
+                                sensordatavalues: {
+                                    humidity: average(humidity),
+                                    temperature: average(temperature),
+                                    pressure: average(pressure),
+                                    noise: average(noise),
+                                    pm: average(pm),
+                                    aqi_us: average(aqi_us),
+                                },
+                            };
+                            res.send(result);
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                } else {
+                    res.status(404).send({ message: "Not Found" });
+                }
             }
         ).close((err) => {
             if (err) {
@@ -156,7 +161,9 @@ router
         return 0;
     })
     .get("/data.1h", (req, res) => {
-        const delta_time = parseInt(conv("now")) - 100;
+        const now = new Date();
+        const delta_date = new Date(now.getTime() - 60 * 60 * 1000);
+        const delta_time = parseInt(conv(delta_date));
 
         let db = new sqlite3.Database("src/db.db", (err) => {
             if (err) {
@@ -184,7 +191,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -208,34 +215,38 @@ router
                     return err;
                 }
 
-                axios
-                    .get(
-                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
-                    )
-                    .then((r) => {
-                        result = {
-                            timestamp: timestamp,
-                            id: id,
-                            location: {
-                                latitude: position.lat,
-                                longitude: position.long,
-                                altitude: position.alt,
-                                country: r.data.split("\r")[0],
-                            },
-                            sensordatavalues: {
-                                humidity: average(humidity),
-                                temperature: average(temperature),
-                                pressure: average(pressure),
-                                noise: average(noise),
-                                pm: average(pm),
-                                aqi_us: average(aqi_us),
-                            },
-                        };
-                        res.send(result);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                if (id !== null) {
+                    axios
+                        .get(
+                            `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                        )
+                        .then((r) => {
+                            result = {
+                                timestamp: timestamp,
+                                id: id,
+                                location: {
+                                    latitude: position.lat,
+                                    longitude: position.long,
+                                    altitude: position.alt,
+                                    country: r.data.split("\r")[0],
+                                },
+                                sensordatavalues: {
+                                    humidity: average(humidity),
+                                    temperature: average(temperature),
+                                    pressure: average(pressure),
+                                    noise: average(noise),
+                                    pm: average(pm),
+                                    aqi_us: average(aqi_us),
+                                },
+                            };
+                            res.send(result);
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                } else {
+                    res.status(404).send({ message: "Not Found" });
+                }
             }
         ).close((err) => {
             if (err) {
@@ -251,7 +262,9 @@ router
         return 0;
     })
     .get("/data.24h", (req, res) => {
-        const delta_time = parseInt(conv("now")) - 1000;
+        const now = new Date();
+        const delta_date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const delta_time = parseInt(conv(delta_date));
 
         let db = new sqlite3.Database("src/db.db", (err) => {
             if (err) {
@@ -279,7 +292,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE 'timestamp' > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -303,34 +316,38 @@ router
                     return err;
                 }
 
-                axios
-                    .get(
-                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
-                    )
-                    .then((r) => {
-                        result = {
-                            timestamp: timestamp,
-                            id: id,
-                            location: {
-                                latitude: position.lat,
-                                longitude: position.long,
-                                altitude: position.alt,
-                                country: r.data.split("\r")[0],
-                            },
-                            sensordatavalues: {
-                                humidity: average(humidity),
-                                temperature: average(temperature),
-                                pressure: average(pressure),
-                                noise: average(noise),
-                                pm: average(pm),
-                                aqi_us: average(aqi_us),
-                            },
-                        };
-                        res.send(result);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                if (id !== null) {
+                    axios
+                        .get(
+                            `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                        )
+                        .then((r) => {
+                            result = {
+                                timestamp: timestamp,
+                                id: id,
+                                location: {
+                                    latitude: position.lat,
+                                    longitude: position.long,
+                                    altitude: position.alt,
+                                    country: r.data.split("\r")[0],
+                                },
+                                sensordatavalues: {
+                                    humidity: average(humidity),
+                                    temperature: average(temperature),
+                                    pressure: average(pressure),
+                                    noise: average(noise),
+                                    pm: average(pm),
+                                    aqi_us: average(aqi_us),
+                                },
+                            };
+                            res.send(result);
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                } else {
+                    res.status(404).send({ message: "Not Found" });
+                }
             }
         ).close((err) => {
             if (err) {
@@ -371,7 +388,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT temperature, humidity, pressure FROM data WHERE 'timestamp' > ${delta_time}`,
+            `SELECT temperature, humidity, pressure FROM data WHERE timestamp > ${delta_time}`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -392,31 +409,35 @@ router
                     return err;
                 }
 
-                axios
-                    .get(
-                        `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
-                    )
-                    .then((r) => {
-                        result = {
-                            timestamp: timestamp,
-                            id: id,
-                            location: {
-                                latitude: position.lat,
-                                longitude: position.long,
-                                altitude: position.alt,
-                                country: r.data.split("\r")[0],
-                            },
-                            sensordatavalues: {
-                                humidity: average(humidity),
-                                temperature: average(temperature),
-                                pressure: average(pressure),
-                            },
-                        };
-                        res.send(result);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                if (id !== null) {
+                    axios
+                        .get(
+                            `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                        )
+                        .then((r) => {
+                            result = {
+                                timestamp: timestamp,
+                                id: id,
+                                location: {
+                                    latitude: position.lat,
+                                    longitude: position.long,
+                                    altitude: position.alt,
+                                    country: r.data.split("\r")[0],
+                                },
+                                sensordatavalues: {
+                                    humidity: average(humidity),
+                                    temperature: average(temperature),
+                                    pressure: average(pressure),
+                                },
+                            };
+                            res.send(result);
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                } else {
+                    res.status(404).send({ message: "Not Found" });
+                }
             }
         ).close((err) => {
             if (err) {
@@ -436,6 +457,8 @@ router
         const timestamp = conv("now");
         const sensordatavalues = req.body.sensordatavalues;
 
+        console.log(sensordatavalues);
+
         let query_column = "INSERT INTO data (id, timestamp, ";
         let query_values = `) VALUES ('${id}', '${timestamp}', `;
 
@@ -444,6 +467,8 @@ router
         let error = false;
 
         sensordatavalues.forEach((v) => {
+            console.log(v.value_type);
+            console.log(check_value(v.value_type));
             if (!check_value(v.value_type)) {
                 error = true;
             } else if (!error) {
