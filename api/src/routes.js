@@ -82,6 +82,8 @@ router
         const noise = [];
         const pm = [];
         const aqi_us = [];
+        const id_list = [];
+        const timestamp_list = [];
         const position = {
             lat: 0,
             long: 0,
@@ -91,7 +93,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -102,6 +104,10 @@ router
                 position.lat = r.lat;
                 position.long = r.long;
                 position.alt = r.alt;
+                // Need to use these 2 lists to have an object per sensor
+                id_list.push(r.id);
+                timestamp_list.push(r.timestamp);
+                // These should go away
                 id = r.id;
                 timestamp = reverse_conv(r.timestamp);
             },
@@ -191,7 +197,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -292,7 +298,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT * FROM data WHERE timestamp > ${delta_time}`,
+            `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
@@ -388,7 +394,7 @@ router
         let timestamp = null;
 
         db.each(
-            `SELECT temperature, humidity, pressure FROM data WHERE timestamp > ${delta_time}`,
+            `SELECT temperature, humidity, pressure, id FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
             (e, r) => {
                 humidity.push(r.humidity);
                 temperature.push(r.temperature);
