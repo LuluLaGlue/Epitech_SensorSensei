@@ -60,7 +60,7 @@ const check_value = (v) => {
 };
 
 router
-    .get("/data", (req, res) => {
+    .get("/data", async (req, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 5 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -85,9 +85,9 @@ router
         const id_list = [];
         const timestamp_list = [];
         const position = {
-            lat: 0,
-            long: 0,
-            alt: 0,
+            lat: [],
+            long: [],
+            alt: [],
         };
         let id = null;
         let timestamp = null;
@@ -101,9 +101,9 @@ router
                 noise.push(r.noise);
                 pm.push(r.pm);
                 aqi_us.push(r.aqi_us);
-                position.lat = r.lat;
-                position.long = r.long;
-                position.alt = r.alt;
+                position.lat.push(r.lat);
+                position.long.push(r.long);
+                position.alt.push(r.alt);
                 // Need to use these 2 lists to have an object per sensor
                 id_list.push(r.id);
                 timestamp_list.push(r.timestamp);
@@ -120,38 +120,97 @@ router
                     console.log(err);
                     return err;
                 }
-                if (id !== null) {
-                    axios
-                        .get(
-                            `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
-                        )
-                        .then((r) => {
-                            result = {
-                                timestamp: timestamp,
-                                id: id,
-                                location: {
-                                    latitude: position.lat,
-                                    longitude: position.long,
-                                    altitude: position.alt,
-                                    country: r.data.split("\r")[0],
+                // Not tested might be broken as hell
+                // Not optimized at all
+                let result = [];
+                if (id_list.length !== 0) {
+                    let i = 0;
+
+                    while (i <= id_list.length) {
+                        if (i === 0 || id_list[i - 1] !== id_list[i]) {
+                            result.push({
+                                id: id_list[i],
+                                timestamp: timestamp_list[i],
+                                position: {
+                                    lat: position.lat[i],
+                                    long: position.long[i],
+                                    alt: position.alt[i],
+                                    country: "",
                                 },
-                                sensordatavalues: {
-                                    humidity: average(humidity),
-                                    temperature: average(temperature),
-                                    pressure: average(pressure),
-                                    noise: average(noise),
-                                    pm: average(pm),
-                                    aqi_us: average(aqi_us),
-                                },
-                            };
-                            res.send(result);
-                        })
-                        .catch((error) => {
-                            console.error(error);
-                        });
+                                humidity: [humidity[i]],
+                                temperature: [temperature[i]],
+                                pressure: [pressure[i]],
+                                noise: noise[noise[i]],
+                                pm: [pm[i]],
+                                aqi_us: [aqi_us[i]],
+                            });
+                        } else {
+                            result[result.length - 1].humidity.push(
+                                humidity[i]
+                            );
+                            result[result.length - 1].temperature.push(
+                                temperature[i]
+                            );
+                            result[result.length - 1].pressure.push(
+                                pressure[i]
+                            );
+                            result[result.length - 1].noise.push(noise[i]);
+                            result[result.length - 1].pm.push(pm[i]);
+                            result[result.length - 1].aqi_us.push(aqi_us[i]);
+                        }
+                        i++;
+                    }
+
+                    i = 0;
+                    while (i <= result.length) {
+                        result[i].humidity = average(result[i].humidity);
+                        result[i].temperature = average(result[i].temperature);
+                        result[i].pressure = average(result[i].pressure);
+                        result[i].noise = average(result[i].noise);
+                        result[i].pm = average(result[i].pm);
+                        result[i].aqi_us = average(result[i].aqi_us);
+                        let api = await axios.get(
+                            `http://api.geonames.org/countryCode?lat=${result[i].position.lat}&lng=${result[i].position.long}&username=lululaglue`
+                        );
+                        result[i].location.country = api.data.split("\r")[0]
+                        i++;
+                    }
+                    res.send(result)
                 } else {
                     res.status(404).send({ message: "Not Found" });
                 }
+                // if (id !== null) {
+                //     axios
+                //         .get(
+                //             `http://api.geonames.org/countryCode?lat=${position.lat}&lng=${position.long}&username=lululaglue`
+                //         )
+                //         .then((r) => {
+                //             result = {
+                //                 timestamp: timestamp,
+                //                 id: id,
+                //                 location: {
+                //                     latitude: position.lat,
+                //                     longitude: position.long,
+                //                     altitude: position.alt,
+                //                     country: r.data.split("\r")[0],
+                //                 },
+                //                 sensordatavalues: {
+                //                     humidity: average(humidity),
+                //                     temperature: average(temperature),
+                //                     pressure: average(pressure),
+                //                     noise: average(noise),
+                //                     pm: average(pm),
+                //                     aqi_us: average(aqi_us),
+                //                 },
+                //             };
+                //             res.send(result);
+                //         })
+                //         .catch((error) => {
+                //             console.error(error);
+                //         });
+                // } else {
+                //     res.status(404).send({ message: "Not Found" });
+                // }
             }
         ).close((err) => {
             if (err) {
