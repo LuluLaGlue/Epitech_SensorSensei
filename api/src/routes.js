@@ -22,33 +22,6 @@ const conv = (date) => {
     return tz_date;
 };
 
-const reverse_conv = (date) => {
-    var pad = (num) => {
-        return ("00" + num).slice(-2);
-    };
-    var tz_date = date.toString();
-    year = tz_date.substring(0, 4);
-    month = tz_date.substring(4, 6);
-    day = tz_date.substring(6, 8);
-    hours = tz_date.substring(8, 10);
-    minutes = tz_date.substring(10, 12);
-    seconds = tz_date.substring(12, 14);
-    tz_date =
-        year +
-        "-" +
-        pad(month) +
-        "-" +
-        pad(day) +
-        " " +
-        pad(hours) +
-        ":" +
-        pad(minutes) +
-        ":" +
-        pad(seconds);
-
-    return tz_date;
-};
-
 const check_value = (v) => {
     return (
         v === "humidity" ||
@@ -64,7 +37,7 @@ const check_value = (v) => {
 };
 
 router
-    .get("/data", async (req, res) => {
+    .get("/data", async (_, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 5 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -96,7 +69,7 @@ router
 
         await db
             .each(
-                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
+                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
                 (e, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
@@ -122,7 +95,7 @@ router
                     let result = [];
                     if (id_list.length !== 0) {
                         let i = 0;
-
+                        // Timestamp is returning oldest timestamp, should be newest
                         while (i < id_list.length) {
                             if (i === 0 || id_list[i - 1] !== id_list[i]) {
                                 result.push({
@@ -197,7 +170,7 @@ router
 
         return 0;
     })
-    .get("/data.1h", async (req, res) => {
+    .get("/data.1h", async (_, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 60 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -229,7 +202,7 @@ router
 
         await db
             .each(
-                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
+                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
                 (e, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
@@ -329,7 +302,7 @@ router
 
         return 0;
     })
-    .get("/data.24h", async (req, res) => {
+    .get("/data.24h", async (_, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -361,7 +334,7 @@ router
 
         await db
             .each(
-                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
+                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
                 (e, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
@@ -461,7 +434,7 @@ router
 
         return 0;
     })
-    .get("/data.temp.min", async (req, res) => {
+    .get("/data.temp.min", async (_, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -490,7 +463,7 @@ router
 
         await db
             .each(
-                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id`,
+                `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
                 (e, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
@@ -586,13 +559,9 @@ router
         let query_column = "INSERT INTO data (id, timestamp, ";
         let query_values = `) VALUES ('${id}', '${timestamp}', `;
 
-        // const software_version = req.body.software_version;
-
         let error = false;
 
         sensordatavalues.forEach((v) => {
-            // console.log(v.value_type);
-            // console.log(check_value(v.value_type));
             if (!check_value(v.value_type)) {
                 error = true;
             } else if (!error) {
