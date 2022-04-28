@@ -70,7 +70,7 @@ router
         await db
             .each(
                 `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
-                (e, r) => {
+                (_, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
@@ -83,7 +83,7 @@ router
                     id_list.push(r.id);
                     timestamp_list.push(r.timestamp);
                 },
-                async (err, row) => {
+                async (err, _) => {
                     if (err) {
                         res.status(400).send({
                             message: "Something went wrong",
@@ -203,7 +203,7 @@ router
         await db
             .each(
                 `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
-                (e, r) => {
+                (_, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
@@ -216,7 +216,7 @@ router
                     id_list.push(r.id);
                     timestamp_list.push(r.timestamp);
                 },
-                async (err, row) => {
+                async (err, _) => {
                     if (err) {
                         res.status(400).send({
                             message: "Something went wrong",
@@ -335,7 +335,7 @@ router
         await db
             .each(
                 `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
-                (e, r) => {
+                (_, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
@@ -348,7 +348,7 @@ router
                     id_list.push(r.id);
                     timestamp_list.push(r.timestamp);
                 },
-                async (err, row) => {
+                async (err, _) => {
                     if (err) {
                         res.status(400).send({
                             message: "Something went wrong",
@@ -464,7 +464,7 @@ router
         await db
             .each(
                 `SELECT * FROM data WHERE timestamp > ${delta_time} ORDER BY id, timestamp DESC`,
-                (e, r) => {
+                (_, r) => {
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
@@ -474,7 +474,7 @@ router
                     id_list.push(r.id);
                     timestamp_list.push(r.timestamp);
                 },
-                async (err, row) => {
+                async (err, _) => {
                     if (err) {
                         res.status(400).send({
                             message: "Something went wrong",
