@@ -27,7 +27,6 @@ const check_value = (v) => {
         v === "humidity" ||
         v === "temperature" ||
         v === "pressure" ||
-        v === "noise" ||
         v === "pm" ||
         v === "aqi_us" ||
         v === "lat" ||
@@ -56,7 +55,6 @@ router
         const humidity = [];
         const temperature = [];
         const pressure = [];
-        const noise = [];
         const pm = [];
         const aqi_us = [];
         const id_list = [];
@@ -74,7 +72,6 @@ router
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
-                    noise.push(r.noise);
                     pm.push(r.pm);
                     aqi_us.push(r.aqi_us);
                     position.lat.push(r.lat);
@@ -110,7 +107,6 @@ router
                                     humidity: [humidity[i]],
                                     temperature: [temperature[i]],
                                     pressure: [pressure[i]],
-                                    noise: [noise[i]],
                                     pm: [pm[i]],
                                     aqi_us: [aqi_us[i]],
                                 });
@@ -124,7 +120,6 @@ router
                                 result[result.length - 1].pressure.push(
                                     pressure[i]
                                 );
-                                result[result.length - 1].noise.push(noise[i]);
                                 result[result.length - 1].pm.push(pm[i]);
                                 result[result.length - 1].aqi_us.push(
                                     aqi_us[i]
@@ -141,7 +136,6 @@ router
                                 result[i].temperature
                             );
                             result[i].pressure = average(result[i].pressure);
-                            result[i].noise = average(result[i].noise);
                             result[i].pm = average(result[i].pm);
                             result[i].aqi_us = average(result[i].aqi_us);
                             let api = await axios.get(
@@ -189,7 +183,6 @@ router
         const humidity = [];
         const temperature = [];
         const pressure = [];
-        const noise = [];
         const pm = [];
         const aqi_us = [];
         const id_list = [];
@@ -207,7 +200,6 @@ router
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
-                    noise.push(r.noise);
                     pm.push(r.pm);
                     aqi_us.push(r.aqi_us);
                     position.lat.push(r.lat);
@@ -243,7 +235,6 @@ router
                                     humidity: [humidity[i]],
                                     temperature: [temperature[i]],
                                     pressure: [pressure[i]],
-                                    noise: [noise[i]],
                                     pm: [pm[i]],
                                     aqi_us: [aqi_us[i]],
                                 });
@@ -257,7 +248,6 @@ router
                                 result[result.length - 1].pressure.push(
                                     pressure[i]
                                 );
-                                result[result.length - 1].noise.push(noise[i]);
                                 result[result.length - 1].pm.push(pm[i]);
                                 result[result.length - 1].aqi_us.push(
                                     aqi_us[i]
@@ -273,7 +263,6 @@ router
                                 result[i].temperature
                             );
                             result[i].pressure = average(result[i].pressure);
-                            result[i].noise = average(result[i].noise);
                             result[i].pm = average(result[i].pm);
                             result[i].aqi_us = average(result[i].aqi_us);
                             let api = await axios.get(
@@ -323,7 +312,6 @@ router
         const humidity = [];
         const temperature = [];
         const pressure = [];
-        const noise = [];
         const pm = [];
         const aqi_us = [];
         const id_list = [];
@@ -341,7 +329,6 @@ router
                     humidity.push(r.humidity);
                     temperature.push(r.temperature);
                     pressure.push(r.pressure);
-                    noise.push(r.noise);
                     pm.push(r.pm);
                     aqi_us.push(r.aqi_us);
                     position.lat.push(r.lat);
@@ -377,7 +364,6 @@ router
                                     humidity: [humidity[i]],
                                     temperature: [temperature[i]],
                                     pressure: [pressure[i]],
-                                    noise: [noise[i]],
                                     pm: [pm[i]],
                                     aqi_us: [aqi_us[i]],
                                 });
@@ -391,7 +377,6 @@ router
                                 result[result.length - 1].pressure.push(
                                     pressure[i]
                                 );
-                                result[result.length - 1].noise.push(noise[i]);
                                 result[result.length - 1].pm.push(pm[i]);
                                 result[result.length - 1].aqi_us.push(
                                     aqi_us[i]
@@ -407,7 +392,6 @@ router
                                 result[i].temperature
                             );
                             result[i].pressure = average(result[i].pressure);
-                            result[i].noise = average(result[i].noise);
                             result[i].pm = average(result[i].pm);
                             result[i].aqi_us = average(result[i].aqi_us);
                             let api = await axios.get(
