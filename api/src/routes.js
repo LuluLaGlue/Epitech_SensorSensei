@@ -302,7 +302,7 @@ router
 
         return 0;
     })
-    .get("/data.24h", async (_, res) => {
+    .get("/data.24h", async (req, res) => {
         const now = new Date();
         const delta_date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         const delta_time = parseInt(conv(delta_date));
@@ -317,6 +317,8 @@ router
                 return err.message;
             }
         });
+
+        console.log(req.headers);
 
         const humidity = [];
         const temperature = [];
@@ -549,32 +551,62 @@ router
 
         return 0;
     })
-    .post("/push-sensor-data", (req, res) => {
+    .post("/push-sensor-data", async (req, res) => {
         const id = req.header("X-Sensor");
         const timestamp = conv("now");
-        const sensordatavalues = req.body.sensordatavalues;
+        const headers = req.headers;
+        const body = {
+            software_version: req.body.software_version,
+            location: {
+                longitude: "11.576",
+                latitude: "48.12",
+                id: 231,
+                country: "DE",
+                indoor: 0,
+                exact_location: 0,
+                altitude: "516.9",
+            },
+            sensordatavalues: [
+                {
+                    value_type: "pressure",
+                    value: req.body.pressure,
+                },
+                {
+                    value_type: "temperature",
+                    value: req.body.temperature,
+                },
+                {
+                    value_type: "humidity",
+                    value: req.body.humidity,
+                },
+                { value_type: "P2", value: req.body.pm },
+            ],
+        };
 
-        console.log(timestamp);
+        let query = `INSERT INTO data (id, timestamp, lat, long, alt, pressure, humidity, pm, temperature) VALUES ('${id}', '${timestamp}', ${
+            body.location.latitude
+        }, ${body.location.longitude}, ${body.location.altitude}, ${parseFloat(
+            req.body.pressure
+        )}, ${parseFloat(req.body.humidity)}, ${parseFloat(
+            req.body.pm
+        )}, ${parseFloat(req.body.temperature)})`;
 
-        let query_column = "INSERT INTO data (id, timestamp, ";
-        let query_values = `) VALUES ('${id}', '${timestamp}', `;
-
-        let error = false;
-
-        sensordatavalues.forEach((v) => {
-            if (!check_value(v.value_type)) {
-                error = true;
-            } else if (!error) {
-                query_column += `'${v.value_type}', `;
-                query_values += `${parseFloat(v.value)}, `;
+        const sensor_community = await axios.post(
+            "https://api.sensor.community/v1/push-sensor-data/",
+            body,
+            {
+                headers: headers,
             }
+        );
 
-            return 0;
-        });
+        if (sensor_community.status !== 201) {
+            res.status(sensor_community.status).send({
+                err: "Sensor Community Error",
+                message: "Unable to send data to sensor community",
+            });
 
-        query_column = query_column.slice(0, -2);
-        query_values = query_values.slice(0, -2);
-        query_values += ")";
+            return 1;
+        }
 
         let db = new sqlite3.Database("src/db.db", (err) => {
             if (err) {
@@ -587,7 +619,7 @@ router
             }
         });
 
-        db.run(query_column + query_values, (err) => {
+        db.run(query, (err) => {
             if (err) {
                 res.status(400).send({
                     message: "Something went wrong",
@@ -600,7 +632,7 @@ router
                 message: "Data created",
                 timestamp: timestamp,
                 id: id,
-                data: sensordatavalues,
+                data: body,
             });
         }).close((err) => {
             if (err) {
