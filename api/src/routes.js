@@ -542,28 +542,28 @@ router
         const body = {
             software_version: req.body.software_version,
             location: {
-                longitude: "11.576",
-                latitude: "48.12",
+                longitude: "4.835156",
+                latitude: "45.746286",
                 id: 231,
-                country: "DE",
+                country: "FR",
                 indoor: 0,
                 exact_location: 0,
-                altitude: "516.9",
+                altitude: "180.1",
             },
             sensordatavalues: [
                 {
                     value_type: "pressure",
-                    value: req.body.pressure,
+                    value: parseFloat(req.body.pressure),
                 },
                 {
                     value_type: "temperature",
-                    value: req.body.temperature,
+                    value: parseFloat(req.body.temperature),
                 },
                 {
                     value_type: "humidity",
-                    value: req.body.humidity,
+                    value: parseFloat(req.body.humidity),
                 },
-                { value_type: "P2", value: req.body.pm },
+                { value_type: "P2", value: parseFloat(req.body.pm) },
             ],
         };
 
