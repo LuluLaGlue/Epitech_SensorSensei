@@ -540,44 +540,58 @@ router
         const timestamp = conv("now");
         const headers = req.headers;
         const body = {
-            software_version: req.body.software_version,
+            software_version: "1.0",
             location: {
-                longitude: "4.835156",
-                latitude: "45.746286",
-                id: 231,
-                country: "FR",
-                indoor: 0,
-                exact_location: 0,
-                altitude: "180.1",
+                longitude: "4.8351274",
+                latitude: "45.7462877",
+                altitude: req.body.altitude,
             },
             sensordatavalues: [
                 {
                     value_type: "pressure",
-                    value: parseFloat(req.body.pressure),
+                    value: req.body.pressure,
                 },
                 {
                     value_type: "temperature",
-                    value: parseFloat(req.body.temperature),
+                    value: req.body.temperature,
                 },
                 {
                     value_type: "humidity",
-                    value: parseFloat(req.body.humidity),
+                    value: req.body.humidity,
                 },
-                { value_type: "P2", value: parseFloat(req.body.pm) },
+                { value_type: "P2", value: req.body["P2"] },
+                { value_type: "P1", value: req.body["P1"] },
             ],
         };
 
-        let query = `INSERT INTO data (id, timestamp, lat, long, alt, pressure, humidity, pm, temperature) VALUES ('${id}', '${timestamp}', ${
+        console.log("Request Arrived:");
+        console.log(body);
+
+        delete headers["content-length"];
+
+        if (req.body["P1"] > 100 || req.body["P2"] > 100) {
+            console.log({ err: "Aberrant Value in PM" });
+            res.status(401).send({
+                err: "Aberrant Value",
+                message: "PM Value is not correct",
+            });
+
+            return 1;
+        }
+
+        let query = `INSERT INTO data (id, timestamp, lat, long, alt, pressure, humidity, P1, P2, temperature) VALUES ('${id}', '${timestamp}', ${
             body.location.latitude
         }, ${body.location.longitude}, ${body.location.altitude}, ${parseFloat(
             req.body.pressure
         )}, ${parseFloat(req.body.humidity)}, ${parseFloat(
-            req.body.pm
-        )}, ${parseFloat(req.body.temperature)})`;
+            req.body["P1"]
+        )}, ${parseFloat(req.body["P2"])}, ${parseFloat(
+            req.body.temperature
+        )})`;
 
         const sensor_community = await axios.post(
-            "https://api.sensor.community/v1/push-sensor-data/",
-            body,
+            "http://api.sensor.community/v1/push-sensor-data/",
+            JSON.stringify(body),
             {
                 headers: headers,
             }
@@ -612,6 +626,8 @@ router
                 console.log(err);
                 return err.message;
             }
+            console.log({ message: "Data stored and sent to API" });
+            console.log("\n\n");
             res.status(201).send({
                 message: "Data created",
                 timestamp: timestamp,

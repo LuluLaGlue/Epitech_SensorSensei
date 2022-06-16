@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS 'data' (
     'humidity' FLOAT,
     'temperature' FLOAT,
     'pressure' FLOAT,
-    'pm' FLOAT,
+    'p1' FLOAT,
+    'p2' FLOAT,
     'aqi_us' FLOAT
 );
