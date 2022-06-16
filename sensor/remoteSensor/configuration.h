@@ -1,0 +1,8 @@
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
+
+#define LORA_FREQUENCY                      (866E6)
+#define LORA_DEVICE_ADDRESSE                (0x72)
+#define LORA_DESTINATION_ADDRESSE           (0x0E)
+
+#endif // CONFIGURATION_H
