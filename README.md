@@ -20,3 +20,5 @@ To run the API from the root folder run:
 -   <code>cd api/</code>
 -   <code>yarn</code>
 -   <code>node index.js</code>
+
+It's documentation is available <a href="https://documenter.getpostman.com/view/10915279/UVyuRaYE">here</a>
