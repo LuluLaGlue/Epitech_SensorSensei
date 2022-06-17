@@ -1,5 +1,5 @@
-#ifndef WIFINETWORK_HPP
-#define WIFINETWORK_HPP
+#ifndef MDW_SENSORSENSEI_WIFINETWORK_HPP
+#define MDW_SENSORSENSEI_WIFINETWORK_HPP
 
 #include <stdint.h>
 #include "time.h"
@@ -9,7 +9,7 @@ class WifiNetwork
 public:
 	struct tm timeInfo;
 	
-	void WifiNetwork(void);
+	uint8_t initialize(void);
 	uint8_t getTime(void);
 	
 private:	
@@ -17,4 +17,4 @@ private:
 	uint8_t setTime(void);
 };
 
-#endif // WIFINETWORK_HPP
+#endif // MDW_SENSORSENSEI_WIFINETWORK_HPP

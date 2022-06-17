@@ -3,7 +3,7 @@
 
 #include <Wire.h>
 
-void MDW_sensor::MDW_sensor(void)
+void RemoteSensor::initialize(void)
 {
   Serial2.begin(9600, SERIAL_8N1, 16, 17);
   pinMode(13, OUTPUT);
@@ -17,7 +17,7 @@ void MDW_sensor::MDW_sensor(void)
   this->sht20.checkSHT20();
 }
 
-String MDW_sensor::getSensorValue(void)
+String RemoteSensor::getSensorValue(void)
 {
   readPmValue();
   String sensorValue = "{\"humidity\": \"";
@@ -29,7 +29,7 @@ String MDW_sensor::getSensorValue(void)
   sensorValue += "\", \"altitude\": \"";
   sensorValue.concat(bmp280.readAltitude(ALTITUDE_REF));
   sensorValue += "\", \"P2\": \"";
-  sensorValue.concat(pmValue[0]);
+  sensorValue.concat(pmValue[1]);
   sensorValue += "\", \"P1\": \"";
   sensorValue.concat(pmValue[1]);
   sensorValue += "\"}";
@@ -37,11 +37,11 @@ String MDW_sensor::getSensorValue(void)
   return sensorValue;
 }
 
-void MDW_sensor::readPmValue(void)
+void RemoteSensor::readPmValue(void)
 {
   uint8_t index = 0;
-  uint8_t tbPmBrutValue[32] = {0};
-  int16_t tbPmValue[16] = {0};
+  uint8_t tbPmBrutValue[32]={0};
+  int16_t tbPmValue[16]={0};
 
   while (index != 32)
   {
@@ -57,9 +57,7 @@ void MDW_sensor::readPmValue(void)
     }
   }
   index = 0;
-
-  /* the two loop are not made in one because of the captor access optimisation */
-
+    
   for(uint8_t count = 0, index = 0; count < 32 ; count++)
   {
     if( (count % 2) == 0)

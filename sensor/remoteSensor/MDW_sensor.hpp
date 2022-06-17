@@ -7,10 +7,10 @@
 
 #define BMP280_PRESSION_ADDR   0x76
 
-class MDWSensor
+class RemoteSensor
 {
 public:
-  void MDWSensor(void);
+  void initialize(void);
   String  getSensorValue(void);
   
 private:
