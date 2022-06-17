@@ -1,32 +1,25 @@
-#include "MDW_sensorSensei_loraNetwork.hpp"
+#include "loraNetwork.hpp"
 #include "configuration.h"
 
 #include <M5LoRa.h>
 #include <M5Stack.h>
 
-uint8_t LoraNetwork::initialize(void)
+void LoraNetwork::LoraNetwork(void)
 {
-	uint8_t returnCode = 1;
-	
 	LoRa.setPins();
-	if ( LoRa.begin(LORA_FREQUENCY) == 1);
-  {
-    returnCode = 0;
-  }
+	LoRa.begin(LORA_FREQUENCY);
 	this->deviceAddresse = LORA_DEVICE_ADDRESSE;
-  this->destinationAddresse = LORA_DESTINATION_ADDRESSE;
-  this->waitResponse = 0;  
-  
-	return returnCode;
+    this->destinationAddresse = LORA_DESTINATION_ADDRESSE;
+    this->waitResponse = 0;
 }
 
 void LoraNetwork::sendPacket(String payload)
 {
 	LoRa.beginPacket();
 	LoRa.write(this->destinationAddresse);
-  LoRa.write(this->deviceAddresse);
-  LoRa.write(payload.length());
-  LoRa.print(payload);
+    LoRa.write(this->deviceAddresse);
+    LoRa.write(payload.length());
+    LoRa.print(payload);
 	LoRa.endPacket();
 
   this->lastCmd = payload;
@@ -38,7 +31,7 @@ void LoraNetwork::receivePacket(void)
   uint8_t payloadLength = 0;
   uint8_t packetSize = LoRa.parsePacket();
 
-  this->receiveData = "";
+  clearReceiveData();
   if (packetSize != 0)
   {
     if ( (LoRa.read() == this->deviceAddresse) && (LoRa.read() == this->destinationAddresse) )
@@ -48,7 +41,13 @@ void LoraNetwork::receivePacket(void)
       {
         this->receiveData += (char)LoRa.read();
       }
+      M5.Lcd.println(this->receiveData);
       waitResponse = 0;
     }
   }
+}
+
+void LoraNetwork::clearReceiveData(void)
+{
+    this->receiveData = "";
 }

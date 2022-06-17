@@ -1,17 +1,13 @@
-#include "MDW_sensorSensei_wifiNetwork.hpp"
+#include "wifiNetwork.hpp"
 #include "configuration.h"
 
 #include <WiFi.h> 
 #include <HTTPClient.h>
 
-uint8_t WifiNetwork::initialize(void)
+void WifiNetwork::WifiNetwork(void)
 {
-	uint8_t returnCode = 0;
-	
-	returnCode = connectingNetwork();
-	returnCode = setTime();
-
-	return returnCode;
+	connectingNetwork();
+	setTime();
 }
 
 uint8_t WifiNetwork::getTime(void)

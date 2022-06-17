@@ -1,5 +1,5 @@
-#ifndef MDW_SENSORSENSEI_LORANETWORK_HPP
-#define MDW_SENSORSENSEI_LORANETWORK_HPP
+#ifndef LORANETWORK_HPP
+#define LORANETWORK_HPP
 
 #include <stdint.h>
 #include <Arduino.h>
@@ -12,15 +12,16 @@ class LoraNetwork
 public:
   uint8_t waitResponse;
   String receiveData;
-  uint8_t initialize(void);
+
+  void LoraNetwork(void);
   void sendPacket(String payload);
   void receivePacket(void);
+  void clearReceiveData(void);
   
 private:
-
   String lastCmd;
   uint8_t deviceAddresse;
-  uint8_t destinationAddresse;  
+  uint8_t destinationAddresse;
 };
 
-#endif // MDW_SENSORSENSEI_LORANETWORK_HPP 
+#endif // LORANETWORK_HPP

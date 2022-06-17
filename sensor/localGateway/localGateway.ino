@@ -1,6 +1,6 @@
 #include "configuration.h"
-#include "MDW_sensorSensei_wifiNetwork.hpp"
-#include "MDW_sensorSensei_loraNetwork.hpp"
+#include "wifiNetwork.hpp"
+#include "/common/loraNetwork.hpp"
 
 #include <Arduino.h>
 #include <M5Stack.h>
@@ -12,24 +12,14 @@ HTTPClient  api;
 
 void setup(void)
 {
-  uint8_t errorCode = 0;
   
   M5.begin();
   M5.Power.begin();
-  M5.Lcd.setTextSize(2);
   
-  errorCode |= wifiNetwork.initialize();
-  errorCode |= loraNetwork.initialize();
-  
-  if (errorCode != 0)
-  {
-    M5.Lcd.printf("Error during WiFi init : code = 0x%X", errorCode);
-  }
-  else
-  {
-    M5.Lcd.printf("Init success\r\nNode ID =");
-    M5.Lcd.println(X_SENSOR);
-  }
+  wifiNetwork();
+  loraNetwork();
+  M5.Lcd.printf("Init success\r\nNode ID =");
+  M5.Lcd.println(X_SENSOR);
 }
 
 void loop(void)
@@ -51,10 +41,6 @@ void loop(void)
     api.addHeader("Content-Type", "Application/JSON");                    
     errorCode = api.sendRequest("POST", loraNetwork.receiveData);
     api.end();
-    delay(1000);
   }
-  else
-  {
-    delay(1000);
-  }
+  delay(1000);
 }
